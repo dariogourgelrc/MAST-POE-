@@ -1,133 +1,124 @@
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocalSearchParams } from "expo-router";
 
-const selectionOptions = [
-  { id: '1', title: 'Pratos Populares', description: 'Os mais pedidos pelos clientes', icon: 'trending-up', color: '#FF9500' },
-  { id: '2', title: 'Novidades', description: 'Últimos pratos adicionados', icon: 'sparkles', color: '#AF52DE' },
-  { id: '3', title: 'Promoções', description: 'Ofertas especiais do dia', icon: 'pricetag', color: '#FF3B30' },
-  { id: '4', title: 'Vegetarianos', description: 'Opções sem carne', icon: 'leaf', color: '#34C759' },
-  { id: '5', title: 'Rápidos', description: 'Preparo em até 15 minutos', icon: 'time', color: '#007AFF' },
-  { id: '6', title: 'Gourmet', description: 'Pratos especiais do chef', icon: 'star', color: '#FFD60A' },
-];
+// Dados de exemplo dos pratos por course
+const menuItemsByCourse = {
+  starter: [
+    { id: '1', name: 'Bruschetta Italiana', price: 'R$ 18,90', description: 'Pão italiano com tomate, manjericão e mozzarella', icon: 'restaurant-outline' },
+    { id: '2', name: 'Carpaccio de Salmão', price: 'R$ 24,90', description: 'Fatias finas de salmão com alcaparras e limão', icon: 'fish-outline' },
+    { id: '3', name: 'Salada Caesar', price: 'R$ 16,90', description: 'Alface romana, croutons, parmesão e molho caesar', icon: 'leaf-outline' },
+    { id: '4', name: 'Coxinha Gourmet', price: 'R$ 12,90', description: 'Coxinha artesanal com frango desfiado', icon: 'fast-food-outline' },
+  ],
+  main: [
+    { id: '5', name: 'Risotto de Camarão', price: 'R$ 45,90', description: 'Arroz arbóreo cremoso com camarões frescos', icon: 'restaurant' },
+    { id: '6', name: 'Filé Mignon Grelhado', price: 'R$ 52,90', description: 'Filé mignon com batatas rústicas e legumes', icon: 'nutrition' },
+    { id: '7', name: 'Salmão Grelhado', price: 'R$ 38,90', description: 'Salmão fresco com quinoa e aspargos', icon: 'fish' },
+    { id: '8', name: 'Lasanha da Casa', price: 'R$ 28,90', description: 'Lasanha tradicional com molho bolonhesa', icon: 'pizza' },
+  ],
+  dessert: [
+    { id: '9', name: 'Tiramisu', price: 'R$ 16,90', description: 'Sobremesa italiana com café e mascarpone', icon: 'ice-cream' },
+    { id: '10', name: 'Brownie com Sorvete', price: 'R$ 14,90', description: 'Brownie quente com sorvete de baunilha', icon: 'cafe' },
+    { id: '11', name: 'Cheesecake de Frutas Vermelhas', price: 'R$ 18,90', description: 'Cheesecake cremoso com calda de frutas', icon: 'heart' },
+    { id: '12', name: 'Pudim de Leite', price: 'R$ 12,90', description: 'Pudim tradicional com calda de caramelo', icon: 'wine' },
+  ],
+};
 
-const quickFilters = [
-  { id: '1', name: 'Até R$ 20', active: false },
-  { id: '2', name: 'Vegetariano', active: false },
-  { id: '3', name: 'Sem Glúten', active: false },
-  { id: '4', name: 'Picante', active: false },
-  { id: '5', name: 'Doce', active: false },
-];
+const courseNames = {
+  starter: 'Starters',
+  main: 'Main Courses', 
+  dessert: 'Desserts'
+};
 
 export default function ChoseScreen() {
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
+  const { course } = useLocalSearchParams();
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [currentCourse, setCurrentCourse] = useState<string>('starter');
 
-  const toggleFilter = (filterId: string) => {
-    setActiveFilters(prev => 
-      prev.includes(filterId) 
-        ? prev.filter(id => id !== filterId)
-        : [...prev, filterId]
+  useEffect(() => {
+    if (course && typeof course === 'string') {
+      setCurrentCourse(course);
+    }
+  }, [course]);
+
+  const currentItems = menuItemsByCourse[currentCourse as keyof typeof menuItemsByCourse] || [];
+
+  const toggleItemSelection = (itemId: string) => {
+    setSelectedItems(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
     );
   };
 
-  const selectOption = (optionId: string) => {
-    setSelectedOption(optionId);
+  const getCourseIcon = (course: string) => {
+    switch(course) {
+      case 'starter': return 'restaurant-outline';
+      case 'main': return 'restaurant';
+      case 'dessert': return 'ice-cream-outline';
+      default: return 'restaurant';
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="checkmark-circle" size={60} color="#FF9500" />
-        <Text style={styles.title}>Escolher</Text>
-        <Text style={styles.subtitle}>Selecione suas preferências</Text>
+        <Ionicons name={getCourseIcon(currentCourse)} size={60} color="#007AFF" />
+        <Text style={styles.title}>{courseNames[currentCourse as keyof typeof courseNames]}</Text>
+        <Text style={styles.subtitle}>Selecione os pratos desejados</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Filtros Rápidos</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
-          {quickFilters.map((filter) => (
-            <TouchableOpacity
-              key={filter.id}
-              style={[
-                styles.filterButton,
-                activeFilters.includes(filter.id) && styles.activeFilter
-              ]}
-              onPress={() => toggleFilter(filter.id)}
-            >
-              <Text style={[
-                styles.filterText,
-                activeFilters.includes(filter.id) && styles.activeFilterText
-              ]}>
-                {filter.name}
-              </Text>
-              {activeFilters.includes(filter.id) && (
-                <Ionicons name="checkmark" size={16} color="#FFFFFF" style={styles.checkIcon} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Categorias Especiais</Text>
-        <View style={styles.optionsContainer}>
-          {selectionOptions.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.optionCard,
-                selectedOption === option.id && styles.selectedCard
-              ]}
-              onPress={() => selectOption(option.id)}
-            >
-              <View style={[styles.optionIcon, { backgroundColor: `${option.color}20` }]}>
-                <Ionicons name={option.icon as any} size={28} color={option.color} />
-              </View>
-              <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>{option.title}</Text>
-                <Text style={styles.optionDescription}>{option.description}</Text>
-              </View>
+      <FlatList
+        data={currentItems}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.itemsList}
+        renderItem={({ item }) => (
+          <TouchableOpacity 
+            style={[
+              styles.menuItem,
+              selectedItems.includes(item.id) && styles.selectedItem
+            ]}
+            onPress={() => toggleItemSelection(item.id)}
+          >
+            <View style={styles.itemIcon}>
+              <Ionicons name={item.icon as any} size={24} color="#007AFF" />
+            </View>
+            <View style={styles.itemInfo}>
+              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemDescription}>{item.description}</Text>
+            </View>
+            <View style={styles.itemPrice}>
+              <Text style={styles.priceText}>{item.price}</Text>
               <View style={styles.selectionIndicator}>
-                {selectedOption === option.id ? (
+                {selectedItems.includes(item.id) ? (
                   <Ionicons name="checkmark-circle" size={24} color="#34C759" />
                 ) : (
                   <View style={styles.unselectedCircle} />
                 )}
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ordenar Por</Text>
-        <View style={styles.sortContainer}>
-          <TouchableOpacity style={styles.sortButton}>
-            <Ionicons name="star" size={20} color="#FFD60A" />
-            <Text style={styles.sortText}>Mais Avaliados</Text>
+      {selectedItems.length > 0 && (
+        <View style={styles.actionContainer}>
+          <TouchableOpacity 
+            style={styles.clearButton}
+            onPress={() => setSelectedItems([])}
+          >
+            <Text style={styles.clearButtonText}>Limpar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sortButton}>
-            <Ionicons name="pricetag" size={20} color="#34C759" />
-            <Text style={styles.sortText}>Menor Preço</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sortButton}>
-            <Ionicons name="time" size={20} color="#007AFF" />
-            <Text style={styles.sortText}>Mais Rápido</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+            <Text style={styles.addButtonText}>
+              Adicionar ({selectedItems.length})
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.actionContainer}>
-        <TouchableOpacity style={styles.clearButton}>
-          <Text style={styles.clearButtonText}>Limpar Filtros</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.applyButton}>
-          <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-          <Text style={styles.applyButtonText}>Aplicar</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      )}
+    </View>
   );
 }
 
@@ -141,6 +132,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 30,
     paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   title: {
     fontSize: 28,
@@ -154,53 +153,16 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     textAlign: "center",
   },
-  section: {
-    marginTop: 20,
-    paddingHorizontal: 20,
+  itemsList: {
+    padding: 20,
+    paddingBottom: 100,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1D1D1F",
-    marginBottom: 15,
-  },
-  filtersContainer: {
-    marginBottom: 10,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
-  },
-  activeFilter: {
-    backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#007AFF",
-  },
-  activeFilterText: {
-    color: "#FFFFFF",
-  },
-  checkIcon: {
-    marginLeft: 5,
-  },
-  optionsContainer: {
-    gap: 12,
-  },
-  optionCard: {
+  menuItem: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 15,
+    marginBottom: 12,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -213,32 +175,44 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
   },
-  selectedCard: {
+  selectedItem: {
     borderColor: "#34C759",
+    backgroundColor: "#F0FFF4",
   },
-  optionIcon: {
+  itemIcon: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: "#F0F8FF",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
   },
-  optionContent: {
+  itemInfo: {
     flex: 1,
   },
-  optionTitle: {
+  itemName: {
     fontSize: 16,
     fontWeight: "600",
     color: "#1D1D1F",
     marginBottom: 4,
   },
-  optionDescription: {
+  itemDescription: {
     fontSize: 12,
     color: "#8E8E93",
+    lineHeight: 16,
+  },
+  itemPrice: {
+    alignItems: "flex-end",
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#007AFF",
+    marginBottom: 8,
   },
   selectionIndicator: {
-    marginLeft: 10,
+    alignItems: "center",
   },
   unselectedCircle: {
     width: 24,
@@ -247,39 +221,25 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#E5E5EA",
   },
-  sortContainer: {
+  actionContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  sortButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingBottom: 40,
+    gap: 15,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: -2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  sortText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#1D1D1F",
-    marginLeft: 5,
-  },
-  actionContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    gap: 15,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   clearButton: {
     flex: 1,
@@ -295,8 +255,8 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     fontWeight: "600",
   },
-  applyButton: {
-    flex: 1,
+  addButton: {
+    flex: 2,
     backgroundColor: "#007AFF",
     borderRadius: 12,
     paddingVertical: 15,
@@ -304,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  applyButtonText: {
+  addButtonText: {
     fontSize: 16,
     color: "#FFFFFF",
     fontWeight: "600",

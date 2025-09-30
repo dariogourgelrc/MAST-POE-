@@ -40,6 +40,7 @@ export default function RootLayout() {
         name="add-item"
         options={{
           title: "Adicionar",
+          href: null, // Remove da navegação por abas
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle" size={size} color={color} />
           ),

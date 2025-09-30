@@ -2,31 +2,31 @@ import { Text, View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert 
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 
-const categories = ['Hambúrguers', 'Pizzas', 'Saladas', 'Massas', 'Bebidas', 'Sobremesas'];
+const courses = ['Starter', 'Main', 'Dessert'];
 
 export default function AddItemScreen() {
-  const [itemName, setItemName] = useState('');
+  const [dishName, setDishName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemDescription, setItemDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
 
   const handleAddItem = () => {
-    if (!itemName || !itemPrice || !selectedCategory) {
+    if (!dishName || !itemPrice || !selectedCourse) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return;
     }
     
     Alert.alert(
       'Sucesso!', 
-      `Item "${itemName}" adicionado com sucesso!`,
+      `Prato "${dishName}" adicionado com sucesso!`,
       [
         {
           text: 'OK',
           onPress: () => {
-            setItemName('');
+            setDishName('');
             setItemPrice('');
             setItemDescription('');
-            setSelectedCategory('');
+            setSelectedCourse('');
           }
         }
       ]
@@ -43,28 +43,40 @@ export default function AddItemScreen() {
 
       <View style={styles.form}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nome do Prato *</Text>
+          <Text style={styles.label}>Dish Name *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ex: Hambúrguer Especial"
-            value={itemName}
-            onChangeText={setItemName}
+            placeholder="Ex: Risotto de Camarão"
+            value={dishName}
+            onChangeText={setDishName}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Preço *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 25,90"
-            value={itemPrice}
-            onChangeText={setItemPrice}
-            keyboardType="numeric"
-          />
+          <Text style={styles.label}>Select the Course *</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesContainer}>
+            {courses.map((course, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.courseButton,
+                  selectedCourse === course && styles.selectedCourse
+                ]}
+                onPress={() => setSelectedCourse(course)}
+              >
+                <Text style={[
+                  styles.courseText,
+                  selectedCourse === course && styles.selectedCourseText
+                ]}>
+                  {course}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Descrição</Text>
+          <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Descreva os ingredientes e características do prato..."
@@ -76,26 +88,14 @@ export default function AddItemScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Categoria *</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-            {categories.map((category, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === category && styles.selectedCategory
-                ]}
-                onPress={() => setSelectedCategory(category)}
-              >
-                <Text style={[
-                  styles.categoryText,
-                  selectedCategory === category && styles.selectedCategoryText
-                ]}>
-                  {category}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <Text style={styles.label}>Price *</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: 25,90"
+            value={itemPrice}
+            onChangeText={setItemPrice}
+            keyboardType="numeric"
+          />
         </View>
 
         <TouchableOpacity style={styles.imageButton}>
@@ -174,10 +174,10 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
   },
-  categoriesContainer: {
+  coursesContainer: {
     marginTop: 5,
   },
-  categoryButton: {
+  courseButton: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -186,16 +186,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E5EA",
   },
-  selectedCategory: {
+  selectedCourse: {
     backgroundColor: "#007AFF",
     borderColor: "#007AFF",
   },
-  categoryText: {
+  courseText: {
     fontSize: 14,
     fontWeight: "500",
     color: "#007AFF",
   },
-  selectedCategoryText: {
+  selectedCourseText: {
     color: "#FFFFFF",
   },
   imageButton: {
