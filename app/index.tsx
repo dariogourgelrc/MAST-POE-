@@ -1,11 +1,51 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { StorageService, MenuItem } from '../utils/storage';
 
 export default function HomeScreen() {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadMenuItems = async () => {
+    try {
+      const items = await StorageService.getAllMenuItems();
+      setMenuItems(items);
+    } catch (error) {
+      console.error('Erro ao carregar itens:', error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadMenuItems();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    loadMenuItems();
+  }, []);
+
+  const renderMenuItem = ({ item }: { item: MenuItem }) => (
+    <View style={styles.menuItemCard}>
+      <View style={styles.menuItemHeader}>
+        <Text style={styles.menuItemName}>{item.dishName}</Text>
+        <Text style={styles.menuItemPrice}>R {item.price}</Text>
+      </View>
+      <View style={styles.courseTag}>
+        <Text style={styles.courseTagText}>{item.course}</Text>
+      </View>
+      <Text style={styles.menuItemDescription}>{item.description}</Text>
+    </View>
+  );
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.textContainer}>
@@ -20,28 +60,10 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.todayMenuSection}>
-        <Text style={styles.sectionTitle}>Menu de Hoje</Text>
-        <View style={styles.todayMenuItem}>
-          <View style={styles.foodImageContainer}>
-            <View style={styles.foodImage}>
-              <Ionicons name="restaurant" size={60} color="#FFFFFF" />
-            </View>
-          </View>
-          <View style={styles.menuItemInfo}>
-            <Text style={styles.menuItemName}>Risotto de Camarão</Text>
-            <Text style={styles.menuItemPrice}>R$ 45,90</Text>
-            <Text style={styles.menuItemDescription}>
-              Delicioso risotto cremoso com camarões frescos, temperos especiais e finalizado com queijo parmesão. Uma especialidade do Chef Christoffel.
-            </Text>
-          </View>
-        </View>
-      </View>
-
       <View style={styles.menuStatsSection}>
         <View style={styles.menuStatsCard}>
           <Ionicons name="restaurant-outline" size={30} color="#007AFF" />
-          <Text style={styles.menuStatsNumber}>23</Text>
+          <Text style={styles.menuStatsNumber}>{menuItems.length}</Text>
           <Text style={styles.menuStatsLabel}>Itens Disponíveis</Text>
         </View>
       </View>
@@ -55,7 +77,26 @@ export default function HomeScreen() {
           <Text style={styles.addItemButtonText}>Adicionar Novo Item ao Menu</Text>
         </TouchableOpacity>
       </View>
-      </ScrollView>
+
+      <View style={styles.menuListSection}>
+        <Text style={styles.sectionTitle}>Todos os Itens do Menu</Text>
+        {menuItems.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="restaurant-outline" size={60} color="#CCC" />
+            <Text style={styles.emptyStateText}>Nenhum item adicionado ainda</Text>
+            <Text style={styles.emptyStateSubtext}>Adicione seu primeiro prato ao menu!</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={menuItems}
+            renderItem={renderMenuItem}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -120,9 +161,9 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  todayMenuSection: {
-    marginBottom: 30,
+  menuListSection: {
     paddingHorizontal: 20,
+    marginBottom: 30,
   },
   sectionTitle: {
     fontSize: 24,
@@ -131,10 +172,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  todayMenuItem: {
+  menuItemCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 15,
     padding: 20,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -144,46 +186,65 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  foodImageContainer: {
+  menuItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
   },
-  foodImage: {
-    width: 200,
-    height: 150,
-    backgroundColor: '#007AFF',
-    borderRadius: 15,
-    justifyContent: 'center',
+  menuItemName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  menuItemPrice: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  courseTag: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  courseTagText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1976D2',
+  },
+  menuItemDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  emptyState: {
     alignItems: 'center',
+    paddingVertical: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
   },
-  menuItemInfo: {
-    alignItems: 'center',
-  },
-  menuItemName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  menuItemPrice: {
-    fontSize: 20,
+  emptyStateText: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#007AFF',
-    marginBottom: 12,
+    color: '#999',
+    marginTop: 15,
+    marginBottom: 5,
   },
-  menuItemDescription: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 22,
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#CCC',
   },
   header: {
     padding: 20,

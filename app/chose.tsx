@@ -2,39 +2,34 @@ import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-
-// Dados de exemplo dos pratos por course
-const menuItemsByCourse = {
-  starter: [
-    { id: '1', name: 'Bruschetta Italiana', price: 'R$ 18,90', description: 'Pão italiano com tomate, manjericão e mozzarella', icon: 'restaurant-outline' },
-    { id: '2', name: 'Carpaccio de Salmão', price: 'R$ 24,90', description: 'Fatias finas de salmão com alcaparras e limão', icon: 'fish-outline' },
-    { id: '3', name: 'Salada Caesar', price: 'R$ 16,90', description: 'Alface romana, croutons, parmesão e molho caesar', icon: 'leaf-outline' },
-    { id: '4', name: 'Coxinha Gourmet', price: 'R$ 12,90', description: 'Coxinha artesanal com frango desfiado', icon: 'fast-food-outline' },
-  ],
-  main: [
-    { id: '5', name: 'Risotto de Camarão', price: 'R$ 45,90', description: 'Arroz arbóreo cremoso com camarões frescos', icon: 'restaurant' },
-    { id: '6', name: 'Filé Mignon Grelhado', price: 'R$ 52,90', description: 'Filé mignon com batatas rústicas e legumes', icon: 'nutrition' },
-    { id: '7', name: 'Salmão Grelhado', price: 'R$ 38,90', description: 'Salmão fresco com quinoa e aspargos', icon: 'fish' },
-    { id: '8', name: 'Lasanha da Casa', price: 'R$ 28,90', description: 'Lasanha tradicional com molho bolonhesa', icon: 'pizza' },
-  ],
-  dessert: [
-    { id: '9', name: 'Tiramisu', price: 'R$ 16,90', description: 'Sobremesa italiana com café e mascarpone', icon: 'ice-cream' },
-    { id: '10', name: 'Brownie com Sorvete', price: 'R$ 14,90', description: 'Brownie quente com sorvete de baunilha', icon: 'cafe' },
-    { id: '11', name: 'Cheesecake de Frutas Vermelhas', price: 'R$ 18,90', description: 'Cheesecake cremoso com calda de frutas', icon: 'heart' },
-    { id: '12', name: 'Pudim de Leite', price: 'R$ 12,90', description: 'Pudim tradicional com calda de caramelo', icon: 'wine' },
-  ],
-};
+import { StorageService, MenuItem } from "../utils/storage";
 
 const courseNames = {
-  starter: 'Starters',
-  main: 'Main Courses', 
-  dessert: 'Desserts'
+  Starter: 'Starters',
+  Main: 'Main Courses', 
+  Dessert: 'Desserts'
 };
 
 export default function ChoseScreen() {
   const { course } = useLocalSearchParams();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [currentCourse, setCurrentCourse] = useState<string>('starter');
+  const [currentCourse, setCurrentCourse] = useState<string>('Starter');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadMenuItems = async () => {
+    try {
+      setLoading(true);
+      if (currentCourse) {
+        const items = await StorageService.getMenuItemsByCourse(currentCourse);
+        setMenuItems(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (course && typeof course === 'string') {
@@ -42,7 +37,9 @@ export default function ChoseScreen() {
     }
   }, [course]);
 
-  const currentItems = menuItemsByCourse[currentCourse as keyof typeof menuItemsByCourse] || [];
+  useEffect(() => {
+    loadMenuItems();
+  }, [currentCourse]);
 
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems(prev => 
@@ -54,12 +51,40 @@ export default function ChoseScreen() {
 
   const getCourseIcon = (course: string) => {
     switch(course) {
-      case 'starter': return 'restaurant-outline';
-      case 'main': return 'restaurant';
-      case 'dessert': return 'ice-cream-outline';
+      case 'Starter': return 'restaurant-outline';
+      case 'Main': return 'restaurant';
+      case 'Dessert': return 'ice-cream-outline';
       default: return 'restaurant';
     }
   };
+
+  const renderMenuItem = ({ item }: { item: MenuItem }) => (
+    <TouchableOpacity 
+      style={[
+        styles.menuItem,
+        selectedItems.includes(item.id) && styles.selectedItem
+      ]}
+      onPress={() => toggleItemSelection(item.id)}
+    >
+      <View style={styles.itemIcon}>
+        <Ionicons name={getCourseIcon(item.course) as any} size={24} color="#007AFF" />
+      </View>
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemName}>{item.dishName}</Text>
+        <Text style={styles.itemDescription}>{item.description}</Text>
+      </View>
+      <View style={styles.itemPrice}>
+        <Text style={styles.priceText}>R {item.price}</Text>
+        <View style={styles.selectionIndicator}>
+          {selectedItems.includes(item.id) ? (
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" />
+          ) : (
+            <View style={styles.unselectedCircle} />
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -69,38 +94,24 @@ export default function ChoseScreen() {
         <Text style={styles.subtitle}>Selecione os pratos desejados</Text>
       </View>
 
-      <FlatList
-        data={currentItems}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.itemsList}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={[
-              styles.menuItem,
-              selectedItems.includes(item.id) && styles.selectedItem
-            ]}
-            onPress={() => toggleItemSelection(item.id)}
-          >
-            <View style={styles.itemIcon}>
-              <Ionicons name={item.icon as any} size={24} color="#007AFF" />
-            </View>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemDescription}>{item.description}</Text>
-            </View>
-            <View style={styles.itemPrice}>
-              <Text style={styles.priceText}>{item.price}</Text>
-              <View style={styles.selectionIndicator}>
-                {selectedItems.includes(item.id) ? (
-                  <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-                ) : (
-                  <View style={styles.unselectedCircle} />
-                )}
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Carregando pratos...</Text>
+        </View>
+      ) : menuItems.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="restaurant-outline" size={60} color="#CCC" />
+          <Text style={styles.emptyText}>Nenhum prato encontrado</Text>
+          <Text style={styles.emptySubtext}>Adicione pratos desta categoria no menu!</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={menuItems}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.itemsList}
+          renderItem={renderMenuItem}
+        />
+      )}
 
       {selectedItems.length > 0 && (
         <View style={styles.actionContainer}>
@@ -269,5 +280,35 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
     marginLeft: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#8E8E93",
+    textAlign: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#8E8E93",
+    marginTop: 20,
+    textAlign: "center",
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#C7C7CC",
+    marginTop: 8,
+    textAlign: "center",
   },
 });

@@ -1,6 +1,8 @@
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { router } from "expo-router";
+import { StorageService } from "../utils/storage";
 
 const courses = ['Starter', 'Main', 'Dessert'];
 
@@ -10,27 +12,40 @@ export default function AddItemScreen() {
   const [itemDescription, setItemDescription] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!dishName || !itemPrice || !selectedCourse) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return;
     }
     
-    Alert.alert(
-      'Sucesso!', 
-      `Prato "${dishName}" adicionado com sucesso!`,
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            setDishName('');
-            setItemPrice('');
-            setItemDescription('');
-            setSelectedCourse('');
+    try {
+      await StorageService.saveMenuItem({
+        dishName,
+        course: selectedCourse as 'Starter' | 'Main' | 'Dessert',
+        description: itemDescription,
+        price: itemPrice,
+      });
+      
+      Alert.alert(
+        'Sucesso!', 
+        `Prato "${dishName}" adicionado com sucesso!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              setDishName('');
+              setItemPrice('');
+              setItemDescription('');
+              setSelectedCourse('');
+              router.back(); // Volta para a tela anterior
+            }
           }
-        }
-      ]
-    );
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível salvar o item. Tente novamente.');
+      console.error('Erro ao salvar item:', error);
+    }
   };
 
   return (

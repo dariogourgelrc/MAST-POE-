@@ -3,9 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 const courses = [
-  { id: 'starter', name: 'Starter', icon: 'restaurant-outline', description: 'Entradas e aperitivos' },
-  { id: 'main', name: 'Main', icon: 'restaurant', description: 'Pratos principais' },
-  { id: 'dessert', name: 'Dessert', icon: 'ice-cream-outline', description: 'Sobremesas e doces' },
+  { id: 'Starter', name: 'Starter', icon: 'restaurant-outline', description: 'Entradas e aperitivos' },
+  { id: 'Main', name: 'Main', icon: 'restaurant', description: 'Pratos principais' },
+  { id: 'Dessert', name: 'Dessert', icon: 'ice-cream-outline', description: 'Sobremesas e doces' },
 ];
 
 export default function MenuScreen() {

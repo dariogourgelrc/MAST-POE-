@@ -50,6 +50,7 @@ export default function RootLayout() {
         name="chose"
         options={{
           title: "Escolher",
+          href: null, // Remove da navegação por abas - acessível apenas pelo menu
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="checkmark-circle" size={size} color={color} />
           ),
@@ -59,6 +60,7 @@ export default function RootLayout() {
         name="profile"
         options={{
           title: "Perfil",
+          href: null, // Remove da navegação por abas
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
