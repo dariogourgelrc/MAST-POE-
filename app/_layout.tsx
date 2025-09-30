@@ -1,24 +1,68 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "#8E8E93",
+        headerStyle: {
+          backgroundColor: "#F8F9FA",
+        },
+        headerTintColor: "#000",
+        tabBarStyle: {
+          backgroundColor: "#FFFFFF",
+          borderTopWidth: 1,
+          borderTopColor: "#E5E5EA",
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: "Menu",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="menu" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="add-item"
+        options={{
+          title: "Adicionar",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chose"
+        options={{
+          title: "Escolher",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="checkmark-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
