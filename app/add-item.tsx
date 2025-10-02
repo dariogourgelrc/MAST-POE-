@@ -106,7 +106,7 @@ export default function AddItemScreen() {
           <Text style={styles.label}>Price *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ex: 25,90"
+            placeholder="Ex: 25.90"
             value={itemPrice}
             onChangeText={setItemPrice}
             keyboardType="numeric"
@@ -116,7 +116,7 @@ export default function AddItemScreen() {
         {/* Photo upload removed as it's not used */}
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton}>
+          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
           
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     flex: 1,
-    backgroundColor: "#34C759",
+    backgroundColor: "#007AFF",
     borderRadius: 12,
     paddingVertical: 15,
     flexDirection: "row",
