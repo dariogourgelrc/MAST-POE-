@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StorageService, MenuItem } from '../utils/storage';
@@ -13,8 +13,34 @@ export default function HomeScreen() {
       const items = await StorageService.getAllMenuItems();
       setMenuItems(items);
     } catch (error) {
-      console.error('Erro ao carregar itens:', error);
+      console.error('Error loading items:', error);
     }
+  };
+
+  const handleDeleteItem = async (item: MenuItem) => {
+    Alert.alert(
+      'Delete Item',
+      `Are you sure you want to delete "${item.dishName}"?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await StorageService.deleteMenuItem(item.id);
+              await loadMenuItems(); // Refresh the list
+            } catch (error) {
+              Alert.alert('Error', 'Could not delete the item. Please try again.');
+              console.error('Error deleting item:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const onRefresh = async () => {
@@ -31,7 +57,15 @@ export default function HomeScreen() {
     <View style={styles.menuItemCard}>
       <View style={styles.menuItemHeader}>
         <Text style={styles.menuItemName}>{item.dishName}</Text>
-        <Text style={styles.menuItemPrice}>R {item.price}</Text>
+        <View style={styles.menuItemActions}>
+          <Text style={styles.menuItemPrice}>R {item.price}</Text>
+          <TouchableOpacity 
+            style={styles.deleteButton}
+            onPress={() => handleDeleteItem(item)}
+          >
+            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.courseTag}>
         <Text style={styles.courseTagText}>{item.course}</Text>
@@ -50,7 +84,7 @@ export default function HomeScreen() {
         <View style={styles.headerContent}>
           <View style={styles.textContainer}>
             <Text style={styles.title}>Chief Christoffel</Text>
-            <Text style={styles.subtitle}>Cozinheiro Profissional</Text>
+            <Text style={styles.subtitle}>Professional Chef</Text>
           </View>
           <View style={styles.chefImageContainer}>
             <View style={styles.chefImage}>
@@ -64,7 +98,7 @@ export default function HomeScreen() {
         <View style={styles.menuStatsCard}>
           <Ionicons name="restaurant-outline" size={30} color="#007AFF" />
           <Text style={styles.menuStatsNumber}>{menuItems.length}</Text>
-          <Text style={styles.menuStatsLabel}>Itens Disponíveis</Text>
+          <Text style={styles.menuStatsLabel}>Available Items</Text>
         </View>
       </View>
 
@@ -74,17 +108,17 @@ export default function HomeScreen() {
           onPress={() => router.push('/add-item')}
         >
           <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-          <Text style={styles.addItemButtonText}>Adicionar Novo Item ao Menu</Text>
+          <Text style={styles.addItemButtonText}>Add New Item to Menu</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.menuListSection}>
-        <Text style={styles.sectionTitle}>Todos os Itens do Menu</Text>
+        <Text style={styles.sectionTitle}>All Menu Items</Text>
         {menuItems.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="restaurant-outline" size={60} color="#CCC" />
-            <Text style={styles.emptyStateText}>Nenhum item adicionado ainda</Text>
-            <Text style={styles.emptyStateSubtext}>Adicione seu primeiro prato ao menu!</Text>
+            <Text style={styles.emptyStateText}>No items added yet</Text>
+            <Text style={styles.emptyStateSubtext}>Add your first dish to the menu!</Text>
           </View>
         ) : (
           <FlatList
@@ -198,10 +232,22 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
+  menuItemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   menuItemPrice: {
     fontSize: 18,
     fontWeight: '600',
     color: '#007AFF',
+  },
+  deleteButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FFF5F5',
+    borderWidth: 1,
+    borderColor: '#FFE5E5',
   },
   courseTag: {
     backgroundColor: '#E3F2FD',

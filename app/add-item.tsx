@@ -14,7 +14,7 @@ export default function AddItemScreen() {
 
   const handleAddItem = async () => {
     if (!dishName || !itemPrice || !selectedCourse) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+      Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
     
@@ -27,8 +27,8 @@ export default function AddItemScreen() {
       });
       
       Alert.alert(
-        'Sucesso!', 
-        `Prato "${dishName}" adicionado com sucesso!`,
+        'Success!', 
+        `Dish "${dishName}" added successfully!`,
         [
           {
             text: 'OK',
@@ -37,13 +37,13 @@ export default function AddItemScreen() {
               setItemPrice('');
               setItemDescription('');
               setSelectedCourse('');
-              router.back(); // Volta para a tela anterior
+              router.back(); // Go back to previous screen
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o item. Tente novamente.');
+      Alert.alert('Error', 'Could not save the item. Please try again.');
       console.error('Erro ao salvar item:', error);
     }
   };
@@ -52,8 +52,8 @@ export default function AddItemScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Ionicons name="add-circle" size={60} color="#34C759" />
-        <Text style={styles.title}>Adicionar Item</Text>
-        <Text style={styles.subtitle}>Adicione um novo prato ao cardápio</Text>
+        <Text style={styles.title}>Add Item</Text>
+        <Text style={styles.subtitle}>Add a new dish to the menu</Text>
       </View>
 
       <View style={styles.form}>
@@ -61,7 +61,7 @@ export default function AddItemScreen() {
           <Text style={styles.label}>Dish Name *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ex: Risotto de Camarão"
+            placeholder="Ex: Shrimp Risotto"
             value={dishName}
             onChangeText={setDishName}
           />
@@ -94,7 +94,7 @@ export default function AddItemScreen() {
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Descreva os ingredientes e características do prato..."
+            placeholder="Describe the ingredients and characteristics of the dish..."
             value={itemDescription}
             onChangeText={setItemDescription}
             multiline
@@ -113,19 +113,16 @@ export default function AddItemScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.imageButton}>
-          <Ionicons name="camera" size={24} color="#007AFF" />
-          <Text style={styles.imageButtonText}>Adicionar Foto</Text>
-        </TouchableOpacity>
+        {/* Photo upload removed as it's not used */}
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
             <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-            <Text style={styles.addButtonText}>Adicionar</Text>
+            <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -213,24 +210,7 @@ const styles = StyleSheet.create({
   selectedCourseText: {
     color: "#FFFFFF",
   },
-  imageButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingVertical: 15,
-    marginBottom: 30,
-    borderWidth: 2,
-    borderColor: "#007AFF",
-    borderStyle: "dashed",
-  },
-  imageButtonText: {
-    fontSize: 16,
-    color: "#007AFF",
-    fontWeight: "500",
-    marginLeft: 8,
-  },
+  
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

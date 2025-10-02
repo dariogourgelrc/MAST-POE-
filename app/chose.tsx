@@ -1,7 +1,8 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { StorageService, MenuItem } from "../utils/storage";
 
 const courseNames = {
@@ -25,7 +26,7 @@ export default function ChoseScreen() {
         setMenuItems(items);
       }
     } catch (error) {
-      console.error('Erro ao carregar itens:', error);
+      console.error('Error loading items:', error);
     } finally {
       setLoading(false);
     }
@@ -41,12 +42,24 @@ export default function ChoseScreen() {
     loadMenuItems();
   }, [currentCourse]);
 
+  // Refresh menu items when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadMenuItems();
+    }, [currentCourse])
+  );
+
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems(prev => 
       prev.includes(itemId) 
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
+  };
+
+  const handleAddItems = () => {
+    Alert.alert('Success!', 'Items added successfully!');
+    setSelectedItems([]);
   };
 
   const getCourseIcon = (course: string) => {
@@ -91,18 +104,18 @@ export default function ChoseScreen() {
       <View style={styles.header}>
         <Ionicons name={getCourseIcon(currentCourse)} size={60} color="#007AFF" />
         <Text style={styles.title}>{courseNames[currentCourse as keyof typeof courseNames]}</Text>
-        <Text style={styles.subtitle}>Selecione os pratos desejados</Text>
+        <Text style={styles.subtitle}>Select the desired dishes</Text>
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Carregando pratos...</Text>
+          <Text style={styles.loadingText}>Loading dishes...</Text>
         </View>
       ) : menuItems.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="restaurant-outline" size={60} color="#CCC" />
-          <Text style={styles.emptyText}>Nenhum prato encontrado</Text>
-          <Text style={styles.emptySubtext}>Adicione pratos desta categoria no menu!</Text>
+          <Text style={styles.emptyText}>No dishes found</Text>
+          <Text style={styles.emptySubtext}>Add dishes from this category to the menu!</Text>
         </View>
       ) : (
         <FlatList
@@ -119,12 +132,12 @@ export default function ChoseScreen() {
             style={styles.clearButton}
             onPress={() => setSelectedItems([])}
           >
-            <Text style={styles.clearButtonText}>Limpar</Text>
+            <Text style={styles.clearButtonText}>Clear</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddItems}>
             <Ionicons name="add-circle" size={20} color="#FFFFFF" />
             <Text style={styles.addButtonText}>
-              Adicionar ({selectedItems.length})
+              Add ({selectedItems.length})
             </Text>
           </TouchableOpacity>
         </View>

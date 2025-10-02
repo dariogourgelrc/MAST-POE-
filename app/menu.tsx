@@ -3,9 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 const courses = [
-  { id: 'Starter', name: 'Starter', icon: 'restaurant-outline', description: 'Entradas e aperitivos' },
-  { id: 'Main', name: 'Main', icon: 'restaurant', description: 'Pratos principais' },
-  { id: 'Dessert', name: 'Dessert', icon: 'ice-cream-outline', description: 'Sobremesas e doces' },
+  { id: 'Starter', name: 'Starter', icon: 'restaurant-outline', description: 'Appetizers and starters' },
+  { id: 'Main', name: 'Main', icon: 'restaurant', description: 'Main courses' },
+  { id: 'Dessert', name: 'Dessert', icon: 'ice-cream-outline', description: 'Desserts and sweets' },
 ];
 
 export default function MenuScreen() {
@@ -17,7 +17,7 @@ export default function MenuScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Menu</Text>
-        <Text style={styles.subtitle}>Escolha o tipo de prato</Text>
+        <Text style={styles.subtitle}>Choose the type of dish</Text>
       </View>
 
       <View style={styles.coursesContainer}>
