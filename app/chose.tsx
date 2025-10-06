@@ -115,7 +115,7 @@ export default function ChoseScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="restaurant-outline" size={60} color="#CCC" />
           <Text style={styles.emptyText}>No dishes found</Text>
-          <Text style={styles.emptySubtext}>Add dishes from this category to the menu!</Text>
+          <Text style={styles.emptySubtext}>Add dishes from this category to the Guest View!</Text>
         </View>
       ) : (
         <FlatList

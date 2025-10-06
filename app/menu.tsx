@@ -16,7 +16,7 @@ export default function MenuScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Menu</Text>
+        <Text style={styles.title}>Guest View</Text>
         <Text style={styles.subtitle}>Choose the type of dish</Text>
       </View>
 

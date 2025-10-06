@@ -108,12 +108,12 @@ export default function HomeScreen() {
           onPress={() => router.push('/add-item')}
         >
           <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-          <Text style={styles.addItemButtonText}>Add New Item to Menu</Text>
+          <Text style={styles.addItemButtonText}>Add New Item to Guest View</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.menuListSection}>
-        <Text style={styles.sectionTitle}>All Menu Items</Text>
+        <Text style={styles.sectionTitle}>All Guest View Items</Text>
         {menuItems.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="restaurant-outline" size={60} color="#CCC" />

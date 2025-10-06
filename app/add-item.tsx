@@ -53,7 +53,7 @@ export default function AddItemScreen() {
       <View style={styles.header}>
         <Ionicons name="add-circle" size={60} color="#34C759" />
         <Text style={styles.title}>Add Item</Text>
-        <Text style={styles.subtitle}>Add a new dish to the menu</Text>
+        <Text style={styles.subtitle}>Add a new dish to Guest View</Text>
       </View>
 
       <View style={styles.form}>
