@@ -1,50 +1,22 @@
-# Welcome to your Expo app 👋
+Changelog:
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Features
+Core Application Setup: Created all necessary screens for the application with basic, initial content.
 
-## Get started
+Menu and Item Management: Implemented core menu features, including a dedicated "Add Item" button.
 
-1. Install dependencies
+Persistent Storage: Introduced a storage mechanism to successfully save items.
 
-   ```bash
-   npm install
-   ```
+UI Integration: Items saved in storage are now correctly displayed on both the Menu Screen and the Home Screen.
 
-2. Start the app
+🛠️ Improvements & Adjustments
+UI Refinement: Made general adjustments to the UI design for better aesthetics and usability.
 
-   ```bash
-   npx expo start
-   ```
+Screen Optimization: Removed unnecessary screens to streamline the application flow.
 
-In the output, you'll find options to open the app in a
+General Adjustments: Performed various adjustments across different parts of the application.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+🐛 Fixes & Polish
+Feature Cleanup: Ensured everything is working correctly and removed or fixed any features that didn't make sense in the final application flow.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Final Polish: Added final features to the app to verify full operational status.
