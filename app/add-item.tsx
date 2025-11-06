@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { router } from "expo-router";
 import { StorageService } from "../utils/storage";
+import Toast from 'react-native-toast-message';
 
 const courses = ['Starter', 'Main', 'Dessert'];
 
@@ -17,7 +18,20 @@ export default function AddItemScreen() {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
-    
+
+    // Prevent negative prices and show a toast error
+    const priceValue = parseFloat(itemPrice);
+    if (!isNaN(priceValue) && priceValue < 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid price',
+        text2: 'Price cannot be negative.',
+        position: 'bottom',
+        visibilityTime: 2000,
+      });
+      return;
+    }
+
     try {
       await StorageService.saveMenuItem({
         dishName,
@@ -25,23 +39,22 @@ export default function AddItemScreen() {
         description: itemDescription,
         price: itemPrice,
       });
-      
-      Alert.alert(
-        'Success!', 
-        `Dish "${dishName}" added successfully!`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setDishName('');
-              setItemPrice('');
-              setItemDescription('');
-              setSelectedCourse('');
-              router.back(); // Go back to previous screen
-            }
-          }
-        ]
-      );
+
+      Toast.show({
+        type: 'success',
+        text1: 'Item added',
+        text2: `Dish "${dishName}" added successfully!`,
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
+
+      setDishName('');
+      setItemPrice('');
+      setItemDescription('');
+      setSelectedCourse('');
+      setTimeout(() => {
+        router.back();
+      }, 1500);
     } catch (error) {
       Alert.alert('Error', 'Could not save the item. Please try again.');
       console.error('Erro ao salvar item:', error);

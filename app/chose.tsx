@@ -1,9 +1,11 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Alert } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { StorageService, MenuItem } from "../utils/storage";
+import Toast from 'react-native-toast-message';
+import MenuCard from '../components/MenuCard';
 
 const courseNames = {
   Starter: 'Starters',
@@ -58,7 +60,13 @@ export default function ChoseScreen() {
   };
 
   const handleAddItems = () => {
-    Alert.alert('Success!', 'Items added successfully!');
+    Toast.show({
+      type: 'success',
+      text1: 'Items added',
+      text2: 'Items added successfully!',
+      position: 'bottom',
+      visibilityTime: 1500,
+    });
     setSelectedItems([]);
   };
 
@@ -72,31 +80,14 @@ export default function ChoseScreen() {
   };
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => (
-    <TouchableOpacity 
-      style={[
-        styles.menuItem,
-        selectedItems.includes(item.id) && styles.selectedItem
-      ]}
-      onPress={() => toggleItemSelection(item.id)}
-    >
-      <View style={styles.itemIcon}>
-        <Ionicons name={getCourseIcon(item.course) as any} size={24} color="#007AFF" />
-      </View>
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemName}>{item.dishName}</Text>
-        <Text style={styles.itemDescription}>{item.description}</Text>
-      </View>
-      <View style={styles.itemPrice}>
-        <Text style={styles.priceText}>R {item.price}</Text>
-        <View style={styles.selectionIndicator}>
-          {selectedItems.includes(item.id) ? (
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-          ) : (
-            <View style={styles.unselectedCircle} />
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+    <MenuCard
+      item={item}
+      selectable
+      selected={selectedItems.includes(item.id)}
+      onSelectToggle={() => toggleItemSelection(item.id)}
+      showCourseBadge={false}
+      showDescription
+    />
   );
 
   return (

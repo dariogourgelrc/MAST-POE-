@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+
 import { StorageService, MenuItem } from '../utils/storage';
+import MenuCard from '../components/MenuCard';
 
 export default function HomeScreen() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -54,24 +55,12 @@ export default function HomeScreen() {
   }, []);
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => (
-    <View style={styles.menuItemCard}>
-      <View style={styles.menuItemHeader}>
-        <Text style={styles.menuItemName}>{item.dishName}</Text>
-        <View style={styles.menuItemActions}>
-          <Text style={styles.menuItemPrice}>R {item.price}</Text>
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={() => handleDeleteItem(item)}
-          >
-            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={styles.courseTag}>
-        <Text style={styles.courseTagText}>{item.course}</Text>
-      </View>
-      <Text style={styles.menuItemDescription}>{item.description}</Text>
-    </View>
+    <MenuCard
+      item={item}
+      showCourseBadge
+      showDescription
+      onDelete={() => handleDeleteItem(item)}
+    />
   );
   return (
     <ScrollView 
@@ -102,15 +91,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.addItemSection}>
-        <TouchableOpacity 
-          style={styles.addItemButton}
-          onPress={() => router.push('/add-item')}
-        >
-          <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-          <Text style={styles.addItemButtonText}>Add New Item to Guest View</Text>
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.menuListSection}>
         <Text style={styles.sectionTitle}>All Guest View Items</Text>
@@ -138,32 +118,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
-  },
-  addItemSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  addItemButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 15,
-    padding: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  addItemButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 10,
   },
   menuStatsSection: {
     paddingHorizontal: 20,
