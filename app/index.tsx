@@ -9,6 +9,18 @@ export default function HomeScreen() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  const formatCurrency = (value: number) => `R ${value.toFixed(2)}`;
+
+  const averageForCourse = (course: 'Starter' | 'Main' | 'Dessert') => {
+    const prices = menuItems
+      .filter(item => item.course === course)
+      .map(item => parseFloat(item.price))
+      .filter(p => Number.isFinite(p) && p >= 0);
+    if (prices.length === 0) return 0;
+    const sum = prices.reduce((acc, p) => acc + p, 0);
+    return sum / prices.length;
+  };
+
   const loadMenuItems = async () => {
     try {
       const items = await StorageService.getAllMenuItems();
@@ -91,6 +103,27 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      <View style={styles.avgStatsSection}>
+        <Text style={styles.avgSectionTitle}>Average Price by Course</Text>
+        <View style={styles.avgRow}>
+          <View style={[styles.avgCard, styles.avgCardFirst]}> 
+            <Ionicons name="restaurant-outline" size={24} color="#007AFF" />
+            <Text style={styles.avgCourseLabel}>Starter</Text>
+            <Text style={styles.avgValue}>{formatCurrency(averageForCourse('Starter'))}</Text>
+          </View>
+          <View style={styles.avgCard}> 
+            <Ionicons name="restaurant" size={24} color="#34C759" />
+            <Text style={styles.avgCourseLabel}>Main</Text>
+            <Text style={styles.avgValue}>{formatCurrency(averageForCourse('Main'))}</Text>
+          </View>
+          <View style={styles.avgCard}> 
+            <Ionicons name="ice-cream-outline" size={24} color="#FF9500" />
+            <Text style={styles.avgCourseLabel}>Dessert</Text>
+            <Text style={styles.avgValue}>{formatCurrency(averageForCourse('Dessert'))}</Text>
+          </View>
+        </View>
+      </View>
+
 
       <View style={styles.menuListSection}>
         <Text style={styles.sectionTitle}>All Guest View Items</Text>
@@ -148,6 +181,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  avgStatsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  avgSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  avgRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  avgCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    padding: 16,
+    flex: 1,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  avgCardFirst: {
+    marginRight: 10,
+  },
+  avgCourseLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 6,
+  },
+  avgValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1D1D1F',
+    marginTop: 4,
   },
   menuListSection: {
     paddingHorizontal: 20,
