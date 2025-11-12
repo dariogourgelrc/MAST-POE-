@@ -35,7 +35,13 @@ export default function MenuCard({
         <View style={styles.actionsRow}>
           <Text style={styles.price}>R {item.price}</Text>
           {onDelete && (
-            <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={onDelete}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Delete item"
+            >
               <Ionicons name="trash-outline" size={20} color="#FF3B30" />
             </TouchableOpacity>
           )}

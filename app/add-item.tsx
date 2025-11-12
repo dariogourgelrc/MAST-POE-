@@ -1,9 +1,11 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { router } from "expo-router";
-import { StorageService } from "../utils/storage";
+import { useState, useEffect } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
+import { StorageService, MenuItem } from "../utils/storage";
 import Toast from 'react-native-toast-message';
+import MenuCard from '../components/MenuCard';
 
 const courses = ['Starter', 'Main', 'Dessert'];
 
@@ -12,6 +14,8 @@ export default function AddItemScreen() {
   const [itemPrice, setItemPrice] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [existingItems, setExistingItems] = useState<MenuItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(false);
 
   const handleAddItem = async () => {
     if (!dishName || !itemPrice || !selectedCourse) {
@@ -52,6 +56,8 @@ export default function AddItemScreen() {
       setItemPrice('');
       setItemDescription('');
       setSelectedCourse('');
+      // Reload items to reflect the new addition
+      await loadExistingItems();
       setTimeout(() => {
         router.back();
       }, 1500);
@@ -61,85 +67,176 @@ export default function AddItemScreen() {
     }
   };
 
+  const loadExistingItems = async () => {
+    try {
+      setLoadingItems(true);
+      const items = await StorageService.getAllMenuItems();
+      setExistingItems(items);
+    } catch (error) {
+      console.error('Error loading existing items:', error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  useEffect(() => {
+    loadExistingItems();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadExistingItems();
+    }, [])
+  );
+
+  const handleDeleteItem = async (item: MenuItem) => {
+    Alert.alert(
+      'Delete Item',
+      `Delete "${item.dishName}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await StorageService.deleteMenuItem(item.id);
+              await loadExistingItems();
+              Toast.show({
+                type: 'success',
+                text1: 'Item deleted',
+                position: 'bottom',
+                visibilityTime: 1200,
+              });
+            } catch (err) {
+              console.error('Delete error:', err);
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to delete',
+                text2: 'Please try again.',
+                position: 'bottom',
+                visibilityTime: 1500,
+              });
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="add-circle" size={60} color="#34C759" />
-        <Text style={styles.title}>Add Item</Text>
-        <Text style={styles.subtitle}>Add a new dish to Guest View</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Dish Name *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Shrimp Risotto"
-            value={dishName}
-            onChangeText={setDishName}
+    <FlatList
+      style={styles.container}
+      data={existingItems}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+          <MenuCard
+            item={item}
+            showCourseBadge
+            showDescription
+            onDelete={() => handleDeleteItem(item)}
           />
         </View>
+      )}
+      ListHeaderComponent={
+        <View>
+          <View style={styles.header}>
+            <Ionicons name="add-circle" size={60} color="#34C759" />
+            <Text style={styles.title}>Add Item</Text>
+            <Text style={styles.subtitle}>Add a new dish to Guest View</Text>
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Select the Course *</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesContainer}>
-            {courses.map((course, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.courseButton,
-                  selectedCourse === course && styles.selectedCourse
-                ]}
-                onPress={() => setSelectedCourse(course)}
-              >
-                <Text style={[
-                  styles.courseText,
-                  selectedCourse === course && styles.selectedCourseText
-                ]}>
-                  {course}
-                </Text>
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Dish Name *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Shrimp Risotto"
+                value={dishName}
+                onChangeText={setDishName}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Select the Course *</Text>
+              <FlatList
+                horizontal
+                data={courses}
+                keyExtractor={(c) => c}
+                contentContainerStyle={styles.coursesContainer}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item: course }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.courseButton,
+                      selectedCourse === course && styles.selectedCourse
+                    ]}
+                    onPress={() => setSelectedCourse(course)}
+                  >
+                    <Text style={[
+                      styles.courseText,
+                      selectedCourse === course && styles.selectedCourseText
+                    ]}>
+                      {course}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Describe the ingredients and characteristics of the dish..."
+                value={itemDescription}
+                onChangeText={setItemDescription}
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Price *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: 25.90"
+                value={itemPrice}
+                onChangeText={setItemPrice}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+              
+              <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Describe the ingredients and characteristics of the dish..."
-            value={itemDescription}
-            onChangeText={setItemDescription}
-            multiline
-            numberOfLines={4}
-          />
+          <View style={styles.manageSection}>
+            <View style={styles.manageHeader}>
+              <Text style={styles.manageTitle}>Your Items</Text>
+              <Text style={styles.manageCount}>{existingItems.length}</Text>
+            </View>
+          </View>
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Price *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 25.90"
-            value={itemPrice}
-            onChangeText={setItemPrice}
-            keyboardType="numeric"
-          />
+      }
+      ListEmptyComponent={
+        <View style={[styles.manageSection, styles.emptyState]}>
+          <Ionicons name="restaurant-outline" size={60} color="#CCC" />
+          <Text style={styles.emptyStateText}>No items added yet</Text>
         </View>
-
-        {/* Photo upload removed as it's not used */}
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+      }
+      contentContainerStyle={{ paddingBottom: 20 }}
+      showsVerticalScrollIndicator={false}
+    />
   );
 }
 
@@ -168,6 +265,37 @@ const styles = StyleSheet.create({
   },
   form: {
     padding: 20,
+  },
+  manageSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  manageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  manageTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  manageCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyState: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#333',
+    marginTop: 10,
+    fontWeight: '600',
   },
   inputGroup: {
     marginBottom: 20,
