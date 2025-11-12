@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { StorageService, MenuItem } from '../utils/storage';
@@ -30,41 +30,7 @@ export default function HomeScreen() {
     }
   };
 
-  const handleDeleteItem = async (item: MenuItem) => {
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(`Delete "${item.dishName}"? This cannot be undone.`);
-      if (!confirmed) return;
-      try {
-        await StorageService.deleteMenuItem(item.id);
-        await loadMenuItems();
-      } catch (error) {
-        console.error('Error deleting item:', error);
-        alert('Could not delete the item. Please try again.');
-      }
-      return;
-    }
-
-    Alert.alert(
-      'Delete Item',
-      `Are you sure you want to delete "${item.dishName}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StorageService.deleteMenuItem(item.id);
-              await loadMenuItems();
-            } catch (error) {
-              Alert.alert('Error', 'Could not delete the item. Please try again.');
-              console.error('Error deleting item:', error);
-            }
-          },
-        },
-      ]
-    );
-  };
+  // Intentionally no delete handler on Home; delete only on Add Item screen
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -81,7 +47,6 @@ export default function HomeScreen() {
       item={item}
       showCourseBadge
       showDescription
-      onDelete={() => handleDeleteItem(item)}
     />
   );
   return (

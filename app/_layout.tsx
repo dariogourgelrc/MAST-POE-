@@ -51,10 +51,7 @@ export default function RootLayout() {
         <Tabs.Screen
           name="filter"
           options={{
-            title: "Filter",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="funnel-outline" size={size} color={color} />
-            ),
+            href: null,
           }}
         />
         <Tabs.Screen
