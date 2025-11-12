@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { router, useFocusEffect } from "expo-router";
@@ -90,6 +90,31 @@ export default function AddItemScreen() {
   );
 
   const handleDeleteItem = async (item: MenuItem) => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Delete "${item.dishName}"? This cannot be undone.`);
+      if (!confirmed) return;
+      try {
+        await StorageService.deleteMenuItem(item.id);
+        await loadExistingItems();
+        Toast.show({
+          type: 'success',
+          text1: 'Item deleted',
+          position: 'bottom',
+          visibilityTime: 1200,
+        });
+      } catch (err) {
+        console.error('Delete error:', err);
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to delete',
+          text2: 'Please try again.',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
+      }
+      return;
+    }
+
     Alert.alert(
       'Delete Item',
       `Delete "${item.dishName}"? This cannot be undone.`,
